@@ -236,6 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (colorClass) node.classList.add(colorClass);
         if (isInactive) node.classList.add('inactive');
         if(node.id === 'node-final') node.classList.add('final-state');
+        
         const spans = node.querySelectorAll('span');
         spans[1].textContent = state.t.toFixed(1);
         spans[3].textContent = state.rh.toFixed(1);
@@ -343,16 +344,16 @@ document.addEventListener('DOMContentLoaded', () => {
             dom.tempHeizVorlauf, dom.tempHeizRuecklauf, dom.tempKuehlVorlauf, dom.tempKuehlRuecklauf,
             dom.stundenHeizen, dom.stundenKuehlen
         ];
-        simpleInputs.forEach(input => input.addEventListener('change', () => {enforceLimits(input); calculateAll();}));
+        simpleInputs.forEach(input => input.addEventListener('input', () => {enforceLimits(input); calculateAll();}));
 
         // Cost dependency inputs
         const costDepInputs = [dom.preisStrom, dom.eer, dom.preisKaelte];
         costDepInputs.forEach(input => input.addEventListener('input', () => {enforceLimits(input); updateCostDependencies(); calculateAll();}));
         dom.kaelteBasisInputs.forEach(radio => radio.addEventListener('change', () => {updateCostDependencies(); calculateAll();}));
         
-        // Synced inputs (number boxes)
-        const syncedNumberInputs = [dom.volumenstrom, dom.tempZuluft, dom.rhZuluft];
-        syncedNumberInputs.forEach(input => {
+        // Synced inputs (sliders and number boxes)
+        const syncedInputs = [dom.volumenstrom, dom.tempZuluft, dom.rhZuluft];
+        syncedInputs.forEach(input => {
             input.addEventListener('input', () => {
                 enforceLimits(input);
                 syncAllSlidersToInputs();
@@ -360,7 +361,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
         
-        // Synced inputs (sliders)
         const sliders = [dom.volumenstromSlider, dom.tempZuluftSlider, dom.rhZuluftSlider];
         sliders.forEach(slider => {
             slider.addEventListener('input', () => {
