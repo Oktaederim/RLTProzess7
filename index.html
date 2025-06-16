@@ -173,20 +173,22 @@
                     <hr>
                     <button id="setReferenceBtn">Referenz festlegen</button>
                     <hr class="section-divider">
-                    <h4 class="annual-cost-header">Jahreskosten-Schätzung (Richtwert)</h4>
-                    <div class="input-group">
-                        <label for="stundenHeizen">Betriebsstunden Heizen / Jahr</label>
-                        <input type="number" id="stundenHeizen" value="1800" step="10" min="0">
+                    <div id="annual-cost-estimation">
+                        <h4 class="annual-cost-header">Jahreskosten-Schätzung (Richtwert)</h4>
+                        <div class="input-group">
+                            <label for="stundenHeizen">Betriebsstunden Heizen / Jahr</label>
+                            <input type="number" id="stundenHeizen" value="1800" step="10" min="0">
+                        </div>
+                        <div class="input-group">
+                            <label for="stundenKuehlen">Betriebsstunden Kühlen / Jahr</label>
+                            <input type="number" id="stundenKuehlen" value="600" step="10" min="0">
+                        </div>
+                        <p class="info-text">Hinweis: Die Schätzung extrapoliert die für den aktuellen Auslegungsfall berechnete Leistung auf die angegebenen Jahresstunden.</p>
+                        <div class="cost-display"><span class="cost-label">Jahreskosten Wärme:</span><span class="cost-value" id="jahreskostenWaerme">0 €/a</span></div>
+                        <div class="cost-display"><span class="cost-label">Jahreskosten Kälte:</span><span class="cost-value" id="jahreskostenKaelte">0 €/a</span></div>
+                        <hr>
+                        <div class="cost-display total"><span class="cost-label">Gesamtkosten / Jahr:</span><span class="cost-value" id="jahreskostenGesamt">0 €/a</span></div>
                     </div>
-                    <div class="input-group">
-                        <label for="stundenKuehlen">Betriebsstunden Kühlen / Jahr</label>
-                        <input type="number" id="stundenKuehlen" value="600" step="10" min="0">
-                    </div>
-                    <p class="info-text">Hinweis: Die Schätzung extrapoliert die für den aktuellen Auslegungsfall berechnete Leistung auf die angegebenen Jahresstunden.</p>
-                    <div class="cost-display"><span class="cost-label">Jahreskosten Wärme:</span><span class="cost-value" id="jahreskostenWaerme">0 €/a</span></div>
-                    <div class="cost-display"><span class="cost-label">Jahreskosten Kälte:</span><span class="cost-value" id="jahreskostenKaelte">0 €/a</span></div>
-                    <hr>
-                    <div class="cost-display total"><span class="cost-label">Gesamtkosten / Jahr:</span><span class="cost-value" id="jahreskostenGesamt">0 €/a</span></div>
                 </div>
             </div>
         </div>
