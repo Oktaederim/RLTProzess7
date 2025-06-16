@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         currentPowers.waerme = operations.ve.p + operations.ne.p;
         currentPowers.kaelte = operations.k.p;
-
+        
         renderAll(states, operations, inputs);
     }
 
@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         colors[3] = operations.ne.p > 0 ? 'color-red' : colors[2];
         const finalColor = finalState.t < startState.t - TOLERANCE ? 'color-blue' : (finalState.t > startState.t + TOLERANCE ? 'color-red' : 'color-green');
 
-        for (let i = 0; i < dom.nodes.length; i++) {
+        for (let i = 0; i <= 4; i++) {
             const node = dom.nodes[i];
             const state = (i < 4) ? states[i] : finalState;
             let color = (i < 4) ? colors[i] : finalColor;
@@ -186,13 +186,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const activeSteps = Object.values(operations).filter(op => op.p > 0);
         let overviewClass = 'process-success';
         if (activeSteps.length > 0) {
-            overviewClass = operations.k.p > 0 ? 'process-info' : 'process-heating';
+            overviewClass = currentPowers.kaelte > 0 ? 'process-info' : 'process-heating';
             const activeNames = Object.entries(operations).filter(([,op]) => op.p > 0).map(([key]) => key.toUpperCase());
             dom.processOverviewContainer.innerHTML = `<div class="process-overview ${overviewClass}">Prozesskette: ${activeNames.join(' → ')}</div>`;
         } else {
             dom.processOverviewContainer.innerHTML = `<div class="process-overview process-success">Idealzustand</div>`;
         }
-
         dom.summaryContainer.innerHTML = (operations.ve.p > 0 && operations.ne.p > 0) ? `<div class="process-step summary"><h4>➕ Gesamt-Heizleistung</h4><div class="result-grid"><div class="result-item"><span class="label">Leistung (VE + NE)</span><span class="value">${currentPowers.waerme.toFixed(2)} kW</span></div></div></div>` : '';
         
         dom.gesamtleistungWaerme.textContent = `${currentPowers.waerme.toFixed(2)} kW`;
@@ -336,66 +335,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- INITIALIZATION ---
     function addEventListeners() {
-        // Simple inputs
-        const simpleInputs = [
-            dom.tempAussen, dom.rhAussen, dom.druck, dom.preisWaerme, dom.xZuluft, 
-            dom.tempHeizVorlauf, dom.tempHeizRuecklauf, dom.tempKuehlVorlauf, dom.tempKuehlRuecklauf,
-            dom.stundenHeizen, dom.stundenKuehlen,
-        ];
-        simpleInputs.forEach(input => {
-            input.addEventListener('input', () => {
-                enforceLimits(input);
-                calculateAll();
-            });
-        });
-
-        // Cost dependency inputs
-        const costDepInputs = [dom.preisStrom, dom.eer, dom.preisKaelte];
-        costDepInputs.forEach(input => {
-            input.addEventListener('input', () => {
-                enforceLimits(input);
-                updateCostDependencies();
-                calculateAll();
-            });
-        });
-        dom.kaelteBasisInputs.forEach(radio => radio.addEventListener('change', () => {
-            updateCostDependencies();
-            calculateAll();
-        }));
-        
-        // Synced inputs (sliders and number boxes)
-        const syncedInputs = [dom.volumenstrom, dom.tempZuluft, dom.rhZuluft];
-        syncedInputs.forEach(input => {
-            input.addEventListener('input', () => {
-                enforceLimits(input);
-                syncAllSlidersToInputs();
-                calculateAll();
-            });
-        });
-        
-        const sliders = [dom.volumenstromSlider, dom.tempZuluftSlider, dom.rhZuluftSlider];
-        sliders.forEach(slider => {
-            slider.addEventListener('input', () => {
-                const inputId = slider.id.replace('Slider', '');
-                const isFloat = inputId !== 'volumenstrom';
-                const value = isFloat ? parseFloat(slider.value).toFixed(1) : slider.value;
-                dom[inputId].value = value;
-                dom[inputId+'Label'].textContent = value;
-                calculateAll();
-            });
-        });
-
-        // Toggles and Selects
-        dom.kuehlerAktiv.addEventListener('change', () => { handleKuehlerToggle(); calculateAll(); });
-        dom.feuchteSollTyp.addEventListener('change', () => { handleKuehlerToggle(); calculateAll(); });
-        dom.kuehlmodus.addEventListener('change', () => { handleKuehlerToggle(); calculateAll(); });
-        
         // Buttons
         dom.resetBtn.addEventListener('click', resetToDefaults);
         dom.resetSlidersBtn.addEventListener('click', resetSlidersToRef);
         dom.setReferenceBtn.addEventListener('click', handleSetReference);
+
+        // All other inputs trigger the master update function
+        const allInputs = document.querySelectorAll('input, select');
+        allInputs.forEach(el => {
+            if(el.id !== 'resetBtn' && el.id !== 'resetSlidersBtn' && el.id !== 'setReferenceBtn') {
+                const eventType = (el.type === 'checkbox' || el.type === 'radio' || el.tagName === 'SELECT') ? 'change' : 'input';
+                el.addEventListener(eventType, masterUpdate);
+            }
+        });
     }
 
+    function masterUpdate(event) {
+        const el = event.target;
+        
+        enforceLimits(el);
+
+        if (el.type === 'range') {
+            const inputId = el.id.replace('Slider', '');
+            const isFloat = inputId !== 'volumenstrom';
+            const value = isFloat ? parseFloat(el.value).toFixed(1) : el.value;
+            dom[inputId].value = value;
+            dom[inputId+'Label'].textContent = value;
+        } else if (dom[el.id + 'Slider']) {
+            syncAllSlidersToInputs();
+        }
+        
+        if (el.name === 'kaeltebasis') {
+            updateCostDependencies();
+        }
+
+        if (['kuehlerAktiv', 'kuehlmodus', 'feuchteSollTyp'].includes(el.id)) {
+            handleKuehlerToggle();
+        }
+
+        calculateAll();
+    }
+    
     addEventListeners();
     handleKuehlerToggle();
     updateCostDependencies();
